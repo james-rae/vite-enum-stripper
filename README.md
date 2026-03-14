@@ -23,10 +23,14 @@ if (dogs === MyEnum.NumberEnumItem) {
 }
 ```
 
-Build it with Vite. You get this for the enum definition (names `n` and `t` are assigned by Vite, can differ every build)
+Build and bundle it with Vite. You get this for the enum definition (names `n` and `t` are assigned by Vite, can differ every build)
 
 ```js
+// esbuild version (Vite 7 and lower)
 var n=(t=>(t[t.NumberEnumItem=123]="NumberEnumItem",t.StringEnumItem="ABC",t))(n||{})
+
+// rolldown version (Vite 8 and higher)
+var n=function(t){return t[t.NumberEnumItem=123]=`NumberEnumItem`,t.StringEnumItem=`ABC`,t}({})
 ```
 
 and this for the code referencing the enum (whitespace re-added for readibility)
@@ -53,7 +57,7 @@ c === 123 ? doSomethingCode1 : c === "ABC" ? doSomethingCode2 : doSomethingImpos
 
 ## Setup
 
-1. Put a copy of `vite.enum.plugin.ts` into your project.
+1. Put a copy of the plugin file into your project. If bundling with `esbuild` (Vite 7 or lower), use file `vite.esbuild.enum.plugin.ts`. If bundling with `rolldown` (Vite 8 or higher), use file `vite.rolldown.enum.plugin.ts`.
 2. In your `vite.config.ts` file, import the plugin from that file.
 3. Add the plugin to your vite config's plugins array.
 
@@ -61,7 +65,7 @@ c === 123 ? doSomethingCode1 : c === "ABC" ? doSomethingCode2 : doSomethingImpos
 // vite.config.ts
 
 import { defineConfig } from 'vite';
-import { enumStripperPlugin } from 'path-to/vite.enum.plugin';
+import { enumStripperPlugin } from 'path-to/vite.xxx.enum.plugin';
 
 export default defineConfig({
     build: {
@@ -103,6 +107,7 @@ I've been running Node `v22.12.0` and Vite `v6.0.1`
 > Do not use this if...
 > - You are building a library that has enums as part of the public interface (you probably shouldn't be doing this regardless)
 > - Your code is actively using the enum data structure (e.g. reverse mapping a value to the enum item name)
+> - Your string enum values contain commas
 
 ## Why
 

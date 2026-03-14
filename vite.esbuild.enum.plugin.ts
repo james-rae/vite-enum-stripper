@@ -2,7 +2,8 @@
 Strips enums, replaces with raw constant values.
 
 ASSUMPTIONS:
-build output is in a single file `build/assets/<package-name>.js`
+- build output is in a single file `build/assets/<package-name>.js`
+- minification is done with esbuild (typically Vite 7 or lower)
 
 Example:
 this defintion
@@ -332,14 +333,16 @@ async function enumParser(path: string) {
     // process every enum
     enumsFound.forEach(enumDef => {
         // extract guts
-        const rawStart = enumDef.fullDefinition.indexOf(`=>(`) + 3;
-        const rawEnd = enumDef.fullDefinition.indexOf(`,${enumDef.innerRoot}))`);
-        const rawGuts = enumDef.fullDefinition.slice(rawStart, rawEnd);
-        const prefixLen = enumDef.innerRoot.length;
-        const numFormat = `${enumDef.innerRoot}[${enumDef.innerRoot}.`;
+        const fullDef = enumDef.fullDefinition;
+        const innieRoot = enumDef.innerRoot;
+        const rawStart = fullDef.indexOf(`=>(`) + 3;
+        const rawEnd = fullDef.indexOf(`,${innieRoot}))`);
+        const rawGuts = fullDef.slice(rawStart, rawEnd);
+        const prefixLen = innieRoot.length;
+        const numFormat = `${innieRoot}[${innieRoot}.`;
         const gutNuggets = rawGuts.split(',').map(s => {
             // <!> this needs to handle both formats
-            let enumDef: string;
+            let newEnumDef: string;
 
             if (s.startsWith(numFormat)) {
                 // number format
@@ -347,12 +350,12 @@ async function enumParser(path: string) {
 
                 const numStart = prefixLen + 1; // prefix[
                 const numEnd = s.indexOf(']=');
-                enumDef = s.substring(numStart, numEnd);
+                newEnumDef = s.substring(numStart, numEnd);
             } else {
                 // string format, take entire nugget
-                enumDef = s;
+                newEnumDef = s;
             }
-            const eqSplit = enumDef.split('=');
+            const eqSplit = newEnumDef.split('=');
             return {
                 key: eqSplit[0].slice(prefixLen), // drops the inner root, so t.FUN becomes .FUN
                 val: eqSplit[1]
@@ -389,7 +392,7 @@ const enumStripperPlugin = () => {
         async closeBundle() {
             const srcPath = path.resolve(__dirname, `build/assets/${packageJson.name}.js`);
             await enumParser(srcPath);
-            console.log('Un-enumified, donethanks');
+            console.log('Enums have been smited, donethanks');
         }
     };
 };

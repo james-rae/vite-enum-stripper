@@ -1,7 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import packageJson from './package.json';
-import { enumStripperPlugin } from './vite.enum.plugin';
+import { enumStripperPlugin } from './vite.esbuild.enum.plugin';
 
 export default defineConfig({
     base: './',
